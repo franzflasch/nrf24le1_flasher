@@ -128,7 +128,7 @@ Now we know the vid (0x0403) and the pid (0x6014) of our FTDI device, so we can 
 to nrf24le1_flasher: If there are more than one devices with this pid and vid you can also pass the index (here it is 0)
 
 ```
-# nrf24le1_flasher -d 0x403-6014-0 --read-ip ip_bkp.img
+# nrf24le1_flasher -d 0x403-0x6014-0 --read-ip ip_bkp.img
 ```
 
 Another programmers/flashers
