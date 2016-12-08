@@ -129,9 +129,6 @@ int spi_transfer(uint8_t *bytes, size_t size)
 		memcpy(bytes, data, size);
 		free(data);
 		return size;
-	}
-
-	delay_ms(100);
-	
+	}	
 	return 0;
 }
