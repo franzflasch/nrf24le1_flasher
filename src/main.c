@@ -67,7 +67,7 @@ static void enable_wen()
 
 		fsr = read_fsr();
 		if (!(fsr & FSR_WEN)) {
-			fprintf(stderr, "failed to set WEN bit on FSR\n");
+			fprintf(stderr, "failed to set WEN bit on FSR, %hhx\n", fsr);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -97,7 +97,7 @@ static void disable_infen()
 		write_fsr(fsr & ~FSR_INFEN);
 		fsr = read_fsr();
 		if (fsr & FSR_INFEN) {
-			fprintf(stderr, "failed to unset INFEN bit on FSR\n");
+			fprintf(stderr, "failed to unset INFEN bit on FSR %hhx\n", fsr);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -117,12 +117,12 @@ static int check_rdismb()
 	return (read_fsr() & FSR_RDISMB) ? 1 : 0;
 }
 
-static void cmd_device(uint8_t bus, uint8_t port)
+static void cmd_device(uint16_t vid, uint16_t pid, uint16_t index)
 {
 	if (spi_started)
 		spi_end();
 
-	if (spi_begin(bus, port) != 0) {
+	if (spi_begin(vid, pid, index) != 0) {
 		fprintf(stderr, "problem accessing device\n");
 		exit(EXIT_FAILURE);
 	}
@@ -384,7 +384,7 @@ static void cmd_show_usage(const char *name)
 
 int main(int argc, char *argv[])
 {
-	uint8_t bus = 0, port = 0;
+	uint16_t vid = 0, pid = 0, index = 0;
 
 	struct option long_options[] = {
 		{"help",	no_argument,		0, 'h'},
@@ -410,40 +410,42 @@ int main(int argc, char *argv[])
 
 		switch (c) {
 		case 'd': // device
-			if (sscanf(optarg, "%hhu-%hhu", &bus, &port) != 2) {
+			if (sscanf(optarg, "%hx-%hx-%hu", &vid, &pid, &index) != 3) {
 				fprintf(stderr, "invalid USB device\n");
 				return EXIT_FAILURE;
 			}
 
-			cmd_device(bus, port);
+			printf("vid: %x, pid: %x, index: %d\n", vid, pid, index);
+
+			cmd_device(vid, pid, index);
 			break;
 		case 'r': // read flash
 			if (!spi_started)
-				cmd_device(0, 0);
+				cmd_device(0, 0, 0);
 
 			cmd_read_flash(optarg);
 			break;
 		case 'w': // write flash
 			if (!spi_started)
-				cmd_device(0, 0);
+				cmd_device(0, 0, 0);
 
 			cmd_write_flash(optarg);
 			break;
 		case 'c': // erase flash
 			if (!spi_started)
-				cmd_device(0, 0);
+				cmd_device(0, 0, 0);
 
 			cmd_erase_flash();
 			break;
 		case 'x': // lock flash
 			if (!spi_started)
-				cmd_device(0, 0);
+				cmd_device(0, 0, 0);
 
 			cmd_lock();
 			break;
 		case 1: // read/write fsr
 			if (!spi_started)
-				cmd_device(0, 0);
+				cmd_device(0, 0, 0);
 
 			if (optarg) {
 				char *check = NULL;
@@ -460,19 +462,19 @@ int main(int argc, char *argv[])
 			break;
 		case 2: // read info page
 			if (!spi_started)
-				cmd_device(0, 0);
+				cmd_device(0, 0, 0);
 
 			cmd_read_ip(optarg);
 			break;
 		case 3: // write info page
 			if (!spi_started)
-				cmd_device(0, 0);
+				cmd_device(0, 0, 0);
 
 			cmd_write_ip(optarg);
 			break;
 		case 4: // erase all
 			if (!spi_started)
-				cmd_device(0, 0);
+				cmd_device(0, 0, 0);
 
 			cmd_erase_all();
 			break;

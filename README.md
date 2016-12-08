@@ -1,6 +1,8 @@
 nRF24LE1 Flasher
 ================
 
+## Now using libmpsse for real hardware access!!!
+
 This software is used to read, write or erase flash memory of Nordic nRF24LE1
 chips. Product information can be found at [Nordic site][1].
 If you are looking for a free SDK to programming that chip, you can find a good
@@ -42,29 +44,27 @@ that pins (extracted from nRF24LE1 spec):
 FTDI FT232R
 -----------
 
-With this chip, we have 8 "GPIOs" to do a bitbang SPI implementation. You need
+With this chip, we have 8 "GPIOs" to do a mpsse hardware SPI implementation. You need
 to check if your breakout can configure to 3v3 operation.
 We hook each pin of nRF24LE1 on FT232R as described:
 
 | nRF24LE1 | FT232R |
 |----------|--------|
-|   FCSN   |   RXD  |
-|   FMISO  |   RTS  |
-|   FMOSI  |   CTS  |
-|   FSCK   |   DTR  |
-|   RESET  |   DSR  |
-|   PROG   |   DCD  |
+|   FCSN   |   AD3  |
+|   FMISO  |   AD2  |
+|   FMOSI  |   AD1  |
+|   FSCK   |   AD0  |
+|   RESET  |   AD4  |
+|   PROG   |   AD5  |
 |   GND    |   GND  |
 |   3v3    |  VCCIO |
-
-Note that the pin FCSN is used as TX too, so we can hook RX on TXD of FT232R and
-we have serial already.
-
 
 Dependencies
 ------------
 
-The only dependency is libftdi1 and libusb-1.0.
+- libftdi1 
+- libusb-1.0
+- libmpsse (https://github.com/franzflasch/libmpsse)
 
 
 Usage
@@ -73,16 +73,16 @@ Usage
 First hook all pins on nRF24LE1 and FT232R, so plug on USB and type on terminal:
 
 ```
-$ lsusb -d 0403:6001
+$ lsusb
 ```
 
 It will list every FTDI device connected at your PC, something like:
 
 ```
-Bus 004 Device 048: ID 0403:6001 Future Technology Devices International, Ltd FT232 USB-Serial (UART) IC 
+Bus 001 Device 002: ID 0403:6014 Future Technology Devices International, Ltd FT232H Single HS USB-UART/FIFO IC
 ```
 
-If you see more that one entry, please go to "Multiple FTDI Devices" section.
+If you see more than one entry, please go to "Multiple FTDI Devices" section.
 
 You need permission to access that USB device. You can become root, use sudo or
 change permission of /dev/bus/usb/$BUS/$DEV specific.
@@ -115,21 +115,20 @@ If you have more than one FTDI plugged, you need to choose which one to be used.
 Type this command on terminal:
 
 ```
-$ lsusb -t
+$ lsusb
 ```
 
 It will list devices like:
 
 ```
-/:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-    |__ Port 2: Dev 48, If 0, Class=Vendor Specific Class, Driver=ftdi_sio, 12M
+Bus 001 Device 002: ID 0403:6014 Future Technology Devices International, Ltd FT232H Single HS USB-UART/FIFO IC
 ```
 
-Now we know the bus (4) and the port (2) of our FTDI device, so we can pass it
-to nrf24le1_flasher:
+Now we know the pid (0x0403) and the vid (0x6014) of our FTDI device, so we can pass it
+to nrf24le1_flasher: If there are more than one devices with this pid and vid you can also pass the index (here it is 0)
 
 ```
-# nrf24le1_flasher -d 4-2 --read-ip ip_bkp.img
+# nrf24le1_flasher -d 0x403-6014-0 --read-ip ip_bkp.img
 ```
 
 Another programmers/flashers
