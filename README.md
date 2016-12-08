@@ -124,7 +124,7 @@ It will list devices like:
 Bus 001 Device 002: ID 0403:6014 Future Technology Devices International, Ltd FT232H Single HS USB-UART/FIFO IC
 ```
 
-Now we know the pid (0x0403) and the vid (0x6014) of our FTDI device, so we can pass it
+Now we know the vid (0x0403) and the pid (0x6014) of our FTDI device, so we can pass it
 to nrf24le1_flasher: If there are more than one devices with this pid and vid you can also pass the index (here it is 0)
 
 ```
